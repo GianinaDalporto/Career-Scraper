@@ -70,6 +70,10 @@ def salary_decision(
         lower = lower_bound_monthly(snapshot)
         if lower is None:
             if snapshot.period == "hourly" and snapshot.hours_per_week is None:
+                # Mirror remote: when onsite/hybrid may omit salary, don't hard-reject
+                # hourly ads that lack hours — flag for review instead.
+                if work_mode in {WorkMode.ONSITE, WorkMode.HYBRID} and not requires_published:
+                    return FilterDecision(accepted=True, flags=["hourly_without_stated_hours"])
                 if work_mode in {WorkMode.ONSITE, WorkMode.HYBRID}:
                     return FilterDecision(
                         accepted=False,
@@ -187,12 +191,20 @@ def geographic_decision(job: NormalisedJobRecord, profile: dict[str, Any]) -> Fi
 
 
 def validity_decision(job: NormalisedJobRecord, profile: dict[str, Any]) -> FilterDecision:
+    from job_scout.utils.text import normalise_key
+
     hard = profile.get("hard_filters") or {}
     reasons: list[str] = []
     if hard.get("reject_empty_title", True) and not job.title.strip():
         reasons.append("empty_title")
     if hard.get("reject_expired", True) and job.closing_date and job.closing_date < utcnow().date():
         reasons.append("closing_date_passed")
+    title_key = normalise_key(job.title)
+    for phrase in hard.get("reject_title_phrases") or []:
+        key = normalise_key(phrase)
+        if key and key in title_key:
+            reasons.append(f"title_excluded:{key}")
+            break
     if reasons:
         return FilterDecision(accepted=False, reasons=reasons)
     return FilterDecision(accepted=True)

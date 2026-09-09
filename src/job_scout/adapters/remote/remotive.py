@@ -12,12 +12,13 @@ from job_scout.utils.dates import parse_datetime
 from job_scout.utils.text import strip_html
 
 SEARCHES = (
-    "mechanical engineer",
-    "project manager",
-    "engineering manager",
-    "operations manager",
-    "automation",
-    "technical product manager",
+    "elementary teacher",
+    "esl teacher",
+    "online tutor",
+    "online teacher",
+    "tefl",
+    "administrative assistant",
+    "school secretary",
 )
 
 

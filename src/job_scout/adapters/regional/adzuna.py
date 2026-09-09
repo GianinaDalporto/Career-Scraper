@@ -12,8 +12,15 @@ from job_scout.models.job import RawJobRecord
 from job_scout.utils.dates import parse_datetime
 from job_scout.utils.text import strip_html
 
-COUNTRIES = ("za", "us", "au", "de", "nl")
-QUERIES = ("mechanical engineer", "project manager", "pipeline engineer")
+COUNTRIES = ("us",)
+QUERIES = (
+    "elementary teacher",
+    "teacher",
+    "ESL teacher",
+    "administrative assistant",
+    "school secretary",
+    "online tutor",
+)
 
 _COUNTRY_CURRENCY = {
     "za": "ZAR",

@@ -11,7 +11,14 @@ from job_scout.models.job import RawJobRecord
 from job_scout.utils.dates import parse_datetime
 from job_scout.utils.text import strip_html
 
-SEARCHES = ("mechanical", "project manager", "engineering manager", "operations", "automation")
+SEARCHES = (
+    "elementary teacher",
+    "esl teacher",
+    "online tutor",
+    "online teacher",
+    "administrative assistant",
+    "school secretary",
+)
 
 
 class HimalayasAdapter(SourceAdapter):

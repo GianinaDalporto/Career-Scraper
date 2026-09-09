@@ -92,6 +92,49 @@ sources:
     javascript_required: false
     salary_often_available: false
 
+  themuse:
+    enabled: true
+    adapter: job_scout.adapters.remote.themuse:TheMuseAdapter
+    source_type: api
+    pipelines: [hybrid, onsite, remote]
+    regions: [US]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: aggregator
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    max_pages: 8
+    category: Education
+    title_keywords:
+      - administrative assistant
+      - admin assistant
+      - office assistant
+      - school secretary
+      - executive assistant
+    location_hints:
+      - ", tx"
+      - texas
+      - ", fl"
+      - florida
+      - ", ga"
+      - georgia
+      - ", al"
+      - alabama
+      - ", tn"
+      - tennessee
+      - ", sc"
+      - "south carolina"
+      - ", nc"
+      - "north carolina"
+      - ", ky"
+      - kentucky
+      - ", co"
+      - colorado
+    notes: >
+      Keyless public JSON. Education category is noisy — title + southern-state
+      location filters keep the admin-assistant stream usable.
+
   greenhouse:
     enabled: true
     adapter: job_scout.adapters.ats.greenhouse:GreenhouseAdapter
@@ -105,9 +148,82 @@ sources:
     javascript_required: false
     salary_often_available: false
     employers:
-      - {name: IXL Learning, slug: ixl-learning}
-      - {name: Age of Learning, slug: ageoflearning}
-    notes: Add more US education / edtech Greenhouse boards as verified.
+      - {name: IXL Learning, slug: ixllearning}
+      - {name: Khan Academy, slug: khanacademy}
+      - {name: Newsela, slug: newsela}
+      - {name: Edmentum, slug: edmentum}
+      - {name: Coursera, slug: coursera}
+      - {name: GoGuardian, slug: goguardian}
+      - {name: DonorsChoose, slug: donorschoose}
+      - {name: Age of Learning, slug: ageoflearninginc}
+      - {name: Outschool, slug: outschool}
+      - {name: Seesaw, slug: seesaw}
+      - {name: Clever, slug: clever}
+      - {name: Code.org, slug: codeorg}
+      - {name: BrainPOP, slug: brainpop}
+      - {name: ACCEL Schools, slug: accelschools}
+      - {name: Founders Classical Academy, slug: foundersclassicalacademy}
+    notes: >
+      Verified public Greenhouse boards for edtech, tutoring, virtual teaching,
+      charter/online teaching (ACCEL, Founders Classical), and teacher-success roles.
+
+  eightfold:
+    enabled: true
+    adapter: job_scout.adapters.ats.eightfold:EightfoldAdapter
+    source_type: ats
+    pipelines: [hybrid, onsite]
+    regions: [US]
+    coverage: {remote: false, hybrid: true, onsite: true}
+    preference: employer_ats
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    page_size: 50
+    max_pages: 4
+    tenants:
+      - name: Houston ISD
+        domain: houstonisd.org
+        base_url: https://apply.houstonisd.org
+        queries:
+          - elementary teacher
+          - grade 3 teacher
+          - administrative assistant
+    notes: >
+      Public Eightfold apply JSON used by Houston ISD careers.
+      Old AppliTrack houstonisd tenant is offline/500. Prefer elementary/grade queries
+      over bare "teacher" (Spanish / PE / secondary noise).
+
+  applitrack:
+    enabled: true
+    adapter: job_scout.adapters.ats.applitrack:AppliTrackAdapter
+    source_type: html
+    pipelines: [hybrid, onsite]
+    regions: [US]
+    coverage: {remote: false, hybrid: false, onsite: true}
+    preference: employer_career
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    request_timeout_seconds: 90
+    request_delay_seconds: 1.5
+    tenants:
+      - name: Fort Worth ISD
+        slug: fortworth
+        location_hint: Fort Worth, TX, United States
+      - name: Gwinnett County Public Schools
+        slug: gwinnett
+        location_hint: Gwinnett County, GA, United States
+      - name: Jefferson County Public Schools
+        slug: jefferson
+        location_hint: Louisville, KY, United States
+      - name: Lewisville ISD
+        slug: lisd
+        location_hint: Lewisville, TX, United States
+    notes: >
+      Frontline AppliTrack Output.asp HTML feed (document.write). Only curated
+      tenants with non-empty JobID lists — OCPS and many other slugs return empty scaffolds.
 
   lever:
     enabled: true
@@ -138,10 +254,14 @@ sources:
     salary_often_available: true
     employers:
       - {name: Amplify, slug: amplify}
-    notes: Curriculum / edtech roles (e.g. Amplify).
+      - {name: Outschool, slug: outschool}
+      - {name: Primer Microschools, slug: primer}
+    notes: >
+      Curriculum / edtech / microschool teaching (Amplify, Outschool, Primer —
+      southern Primer campuses in AL/FL/TX).
 
   smartrecruiters:
-    enabled: false
+    enabled: true
     adapter: job_scout.adapters.ats.smartrecruiters:SmartRecruitersAdapter
     source_type: ats
     pipelines: [remote, hybrid, onsite]
@@ -152,8 +272,14 @@ sources:
     auth_required: false
     javascript_required: false
     salary_often_available: false
-    employers: []
-    notes: Enable when education employers are verified.
+    max_pages: 6
+    max_jobs_per_employer: 400
+    employers:
+      - {name: KIPP Public Schools, slug: KIPP}
+      - {name: Primrose Schools, slug: PrimroseSchools}
+    notes: >
+      KIPP (~490 postings, southern heavy) plus Primrose early-childhood network
+      (TX/GA/FL/NC). Higher page/employer caps so KIPP is not truncated early.
 
   workable:
     enabled: false
@@ -181,7 +307,16 @@ sources:
     auth_required: true
     javascript_required: false
     salary_often_available: true
-    notes: Optional. Many federal roles require US citizenship — flag via mobility.
+    keywords:
+      - Elementary Teacher
+      - Teacher
+      - ESL Teacher
+      - Administrative Assistant
+      - Education Technician
+    notes: >
+      Flag-only source for Nina. Official Search API (needs USAJOBS_API_KEY).
+      Nearly all JOAs require US citizenship — mobility flags handle that; do not treat as a sponsorship board.
+      DoDEA / BIE / ED HQ add little classroom value beyond this API.
 
   adzuna:
     enabled: false
@@ -235,11 +370,45 @@ disabled_not_implemented:
     reason: ToS / anti-bot.
   indeed:
     reason: ToS / anti-bot.
-  teachers_teachers:
-    reason: No stable official public API; evaluate AppliTrack/Frontline district feeds later.
-  schoolspring:
-    reason: Commercial board; no free official API confirmed.
   teachaway:
-    reason: Niche board; no official public jobs API/RSS verified yet.
+    reason: >
+      Public HTML listings exist (no official API/RSS). Candidate for a dedicated
+      low-frequency HTML adapter later — not implemented yet.
+  teachers_teachers:
+    reason: Nuxt + Incapsula; account/recruiter model — no clean public JSON.
+  stride_k12:
+    reason: Workday board (strideinc.wd1.myworkdayjobs.com) — brittle; add after Greenhouse coverage is solid.
+  curriculum_associates:
+    reason: Phenom/Workday custom careers site — no stable public JSON documented yet.
   district_career_pages:
-    reason: Add specific AppliTrack / Frontline / PowerSchool boards per district as adapters when URLs are known.
+    reason: >
+      Dallas Taleo, CMS PowerSchool ATE, TalentEd HTML, and RedRover SPAs still lack
+      clean public JSON. Houston ISD Eightfold + curated AppliTrack tenants are enabled.
+  dodea:
+    reason: US citizenship required; standing talent pool, not a vacancy API.
+  teachgeorgia:
+    reason: Statewide GA vacancies but ASP.NET HTML only — no official feed.
+  schoolspring:
+    reason: >
+      High-value K-12 aggregator (api.schoolspring.com live) but public search route
+      still needs network-tab recon — not implemented yet.
+  vipkid:
+    reason: Evergreen application only; requires US/CA work eligibility — not a vacancy feed.
+  varsity_tutors:
+    reason: Noisy custom/Recruitics pages; prefer manual tutor application.
+  cambly_preply:
+    reason: Marketplace tutor signup, not a scrapeable vacancy API.
+  idea_public_schools:
+    reason: >
+      Jobvite board (jobs.jobvite.com/ideapublicschools-english) is server HTML only —
+      /jobs.rss returns HTML. Candidate for a dedicated HTML adapter later.
+  participate_learning:
+    reason: >
+      Strong J-1 sponsor for SA teachers into NC/SC, but WordPress has no job post type —
+      manual application bookmark, not a scrapeable feed.
+  acsi_nais:
+    reason: careers.acsi.org 403; NAIS Cloudflare interstitial — browser-only.
+  state_teacher_banks:
+    reason: >
+      Teach Georgia / Alabama / CERRA SC / TN / KY / FL DOE — no public feeds
+      (ASP.NET, TLS fail, 403/404).

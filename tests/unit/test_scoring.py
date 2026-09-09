@@ -61,3 +61,44 @@ def test_admin_assistant_can_score():
     )
     scored = score_job(job)
     assert scored.fit_score is not None and scored.fit_score >= 45
+    assert not any("Mechanical" in r or "Chief Engineer" in r for r in scored.fit_reasons)
+
+
+def test_spanish_teacher_scores_low():
+    job = canonical_job(
+        title="Spanish Immersion Teacher — Grade 3",
+        description="Spanish bilingual elementary classroom, public school, K-12 district.",
+        location_text="Austin, TX",
+        city="Austin",
+        region="TX",
+        country_code="US",
+        work_mode=WorkMode.ONSITE,
+    )
+    scored = score_job(job)
+    assert scored.fit_score is not None and scored.fit_score < 60
+
+
+def test_supply_chain_scores_low():
+    job = canonical_job(
+        title="Supply Chain Coordinator",
+        description="Logistics and warehouse fulfillment for an edtech elementary school curriculum kit program.",
+        location_text="Houston, TX",
+        city="Houston",
+        region="TX",
+        country_code="US",
+        work_mode=WorkMode.ONSITE,
+    )
+    scored = score_job(job)
+    assert scored.fit_score is not None and scored.fit_score < 60
+
+
+def test_online_tutor_scores_reasonably():
+    job = canonical_job(
+        title="Online Tutor — Elementary Reading",
+        description="Virtual online tutor for grades 1-5 literacy. Work from home. Google Classroom.",
+        location_text="United States",
+        country_code="US",
+        work_mode=WorkMode.REMOTE,
+    )
+    scored = score_job(job)
+    assert scored.fit_score is not None and scored.fit_score >= 55

@@ -25,14 +25,42 @@ from job_scout.utils.text import normalise_key
 
 logger = logging.getLogger(__name__)
 
+_SUBJECT_EXCLUSIONS = (
+    "spanish",
+    "french",
+    "german",
+    "mandarin",
+    "chinese",
+    "physical education",
+    "pe teacher",
+    "supply chain",
+    "logistics",
+    "warehouse",
+    "fulfillment",
+    "procurement",
+    "customer success",
+)
+
+
+def _title_excluded(title_key: str, profile: dict[str, Any]) -> bool:
+    hard = profile.get("hard_filters") or {}
+    phrases = list(hard.get("reject_title_phrases") or []) + list(_SUBJECT_EXCLUSIONS)
+    for phrase in phrases:
+        key = normalise_key(phrase)
+        if key and key in title_key:
+            return True
+    return False
+
 
 def is_family_relevant(title: str, description: str, profile: dict[str, Any]) -> bool:
-    """Match family titles/keywords with token-set tolerance for inverted DPSA titles.
+    """Match family titles against the job title; body keywords need multiple hits.
 
-    Single-token keywords (water, plant, civil) must hit the title, or the body must
-    contain at least two distinct family keywords, to avoid digest junk.
+    Family titles must not match description prose alone (that admitted logistics
+    and Spanish ads that mentioned "classroom teacher" only in the body).
     """
     title_key = normalise_key(title)
+    if _title_excluded(title_key, profile):
+        return False
     title_tokens = set(title_key.split())
     blob = normalise_key(f"{title} {description or ''}")
     for family in (profile.get("job_families") or {}).values():
@@ -40,13 +68,13 @@ def is_family_relevant(title: str, description: str, profile: dict[str, Any]) ->
             opt = normalise_key(title_opt)
             if not opt:
                 continue
-            if opt in title_key or opt in blob:
+            # Titles match the job title only (never the description blob).
+            if opt in title_key:
                 return True
             opt_tokens = set(opt.split())
-            # "Engineer (Mechanical)" ↔ "Mechanical Engineer"
-            if opt_tokens and opt_tokens <= title_tokens:
+            # Multi-token subset only — bare "Tutor"/"Clerk" must not match.
+            if len(opt_tokens) >= 2 and opt_tokens <= title_tokens:
                 return True
-            # Require substantial overlap — bare "Engineer" must not match "Chief Engineer".
             if len(opt_tokens) >= 2 and title_tokens and title_tokens <= opt_tokens and len(title_tokens) >= 2:
                 return True
         keyword_hits = 0
@@ -65,8 +93,8 @@ def is_family_relevant(title: str, description: str, profile: dict[str, Any]) ->
                 in_blob = key in blob
             if not in_blob and not in_title:
                 continue
-            # Multi-word keywords are strong enough alone.
-            if " " in key and (in_title or in_blob):
+            # Multi-word keyword in the title is enough; body-only needs a second hit.
+            if " " in key and in_title:
                 return True
             if in_title:
                 title_keyword_hit = True

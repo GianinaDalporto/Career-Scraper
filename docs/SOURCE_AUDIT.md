@@ -180,6 +180,56 @@ Preference order used throughout: official public API → official RSS → publi
 - **Enabled:** Yes (page-capped on SmartRecruiters)
 - **Reason:** Live dams / pipelines / water consulting boards confirmed via public ATS JSON. WSP Africa API slug returned empty and was not added. Workday (SMEC) stays excluded.
 
+### Eightfold (Houston ISD)
+- **URL/domain:** `apply.houstonisd.org` — `GET /api/apply/v2/jobs?domain=houstonisd.org&num=&start=&query=`
+- **Region:** US (Texas district)
+- **Coverage:** Mostly on-site; hybrid/remote when labelled
+- **Access:** Public Eightfold apply JSON (same endpoint the careers UI uses)
+- **Auth:** No
+- **Free:** Yes
+- **Salary:** Rare in list payload (`job_description` often empty on list)
+- **Pagination:** `start` / `num` (adapter caps pages + queries)
+- **JavaScript:** No
+- **Stability:** High while HISD stays on Eightfold
+- **Adapter:** `job_scout.adapters.ats.eightfold.EightfoldAdapter`
+- **Enabled:** Yes (Houston ISD tenant)
+- **Reason:** Clean public JSON for a major Bible-Belt district; old AppliTrack `houstonisd` feed fails.
+
+### Frontline AppliTrack (curated tenants)
+- **URL/domain:** `www.applitrack.com/{slug}/onlineapp/jobpostings/Output.asp?all=1`
+- **Region:** US (district tenants)
+- **Coverage:** On-site school roles
+- **Access:** Public HTML/`document.write` job list (no partner SOAP/auth)
+- **Auth:** No
+- **Free:** Yes
+- **Salary:** Rare in list feed
+- **Pagination:** Single large dump per tenant (often multi-MB)
+- **JavaScript:** Markup is JS-escaped HTML; no browser required to fetch/parse
+- **Stability:** Medium (tenant migrations; many slugs return empty ~26KB scaffolds)
+- **Adapter:** `job_scout.adapters.ats.applitrack.AppliTrackAdapter`
+- **Enabled:** Yes — Fort Worth, Gwinnett (GA), Jefferson/Louisville (KY), Lewisville ISD (TX); skip empty tenants (e.g. OCPS)
+- **Reason:** Verified teacher-heavy feeds; skip empty scaffolds and Taleo/PowerSchool ATE boards without public JSON.
+
+### The Muse
+- **URL/domain:** `www.themuse.com/api/public/jobs`
+- **Region:** US (filtered)
+- **Coverage:** Hybrid/onsite/remote as posted
+- **Access:** Documented public JSON, no auth (`category=Education&page=`)
+- **Auth:** No
+- **Free:** Yes
+- **Salary:** Rare
+- **Pagination:** `page` / `page_count` (adapter caps pages)
+- **JavaScript:** No
+- **Stability:** High
+- **Adapter:** `job_scout.adapters.remote.themuse.TheMuseAdapter`
+- **Enabled:** Yes — title keywords for admin assistants + southern location hints
+- **Reason:** Cheap admin-assistant inventory; Education category is noisy without filters.
+
+### Primer Microschools / ACCEL / Primrose / Founders Classical
+- **Access:** Existing Ashby / Greenhouse / SmartRecruiters adapters
+- **Enabled:** Yes (slugs `primer`, `accelschools`, `PrimroseSchools`, `foundersclassicalacademy`)
+- **Reason:** Verified southern microschool, virtual/charter teaching, and early-childhood boards.
+
 ## Disabled pending credentials (implemented)
 
 ### USAJOBS
@@ -195,7 +245,9 @@ Preference order used throughout: official public API → official RSS → publi
 | LinkedIn | ToS / anti-bot. Not a dependency. |
 | Indeed | ToS / anti-bot. Not a dependency. |
 | Facebook / Meta jobs | Login / anti-bot; no free personal jobs API. |
-| TeachAway | Teacher niche; no public jobs API/RSS for this profile. |
+| TeachAway | Public HTML only; international-heavy; no official API — deferred. |
+| SchoolSpring | High K-12 value; `api.schoolspring.com` needs endpoint recon before adapter. |
+| Dallas ISD Taleo / CMS PowerSchool ATE / RedRover | HTML/SPA or browser gates; no clean public JSON. |
 | Devex / Rigzone / Careermine | No free public jobs retrieval (or bot-check HTML). |
 | UN Careers “jobfeed” | Returns SPA HTML, not RSS. |
 | PNet / CareerJunction | No official public API; JS-heavy HTML. |

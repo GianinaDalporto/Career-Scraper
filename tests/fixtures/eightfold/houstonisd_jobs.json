@@ -1,0 +1,56 @@
+{
+  "count": 137,
+  "positions": [
+    {
+      "id": 171841143811,
+      "name": "NES Self-Contained Teacher",
+      "posting_name": "NES Self-Contained Teacher",
+      "location": "800 Ringold, Houston, Texas (US-TX), 77088-6337, United States",
+      "locations": [
+        "800 Ringold, Houston, Texas (US-TX), 77088-6337, United States"
+      ],
+      "department": "Osborne ES",
+      "t_create": 1781481600,
+      "t_update": 1788577224,
+      "ats_job_id": "38247",
+      "display_job_id": "38247",
+      "job_description": "",
+      "work_location_option": "onsite",
+      "canonicalPositionUrl": "https://apply.houstonisd.org/careers/job/171841143811"
+    },
+    {
+      "id": 171841147467,
+      "name": "NES Self-Contained Teacher",
+      "posting_name": "NES Self-Contained Teacher",
+      "location": "2310 Berry Road, Houston, Texas (US-TX), 77093-7418, United States",
+      "locations": [
+        "2310 Berry Road, Houston, Texas (US-TX), 77093-7418, United States"
+      ],
+      "department": "Berry ES",
+      "t_create": 1781481600,
+      "t_update": 1788231735,
+      "ats_job_id": "38248",
+      "display_job_id": "38248",
+      "job_description": "",
+      "work_location_option": "onsite",
+      "canonicalPositionUrl": "https://apply.houstonisd.org/careers/job/171841147467"
+    },
+    {
+      "id": 171841147549,
+      "name": "NES BIL Kindergarten Teacher",
+      "posting_name": "NES BIL Kindergarten Teacher",
+      "location": "2310 Berry Road, Houston, Texas (US-TX), 77093-7418, United States",
+      "locations": [
+        "2310 Berry Road, Houston, Texas (US-TX), 77093-7418, United States"
+      ],
+      "department": "Berry ES",
+      "t_create": 1781481600,
+      "t_update": 1787541375,
+      "ats_job_id": "38250",
+      "display_job_id": "38250",
+      "job_description": "",
+      "work_location_option": "onsite",
+      "canonicalPositionUrl": "https://apply.houstonisd.org/careers/job/171841147549"
+    }
+  ]
+}

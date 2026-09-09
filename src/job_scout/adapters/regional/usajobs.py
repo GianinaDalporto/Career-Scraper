@@ -32,10 +32,21 @@ class UsaJobsAdapter(SourceAdapter):
             follow_redirects=False,
         )
         try:
-            for keyword in ("Mechanical Engineer", "Project Manager", "Pipeline"):
+            keywords = self.config.get("keywords") or (
+                "Elementary Teacher",
+                "Teacher",
+                "ESL Teacher",
+                "Administrative Assistant",
+                "Education Technician",
+            )
+            for keyword in keywords:
                 payload = client.get_json(
                     self.API_URL,
-                    params={"Keyword": keyword, "ResultsPerPage": 50},
+                    params={
+                        "Keyword": keyword,
+                        "ResultsPerPage": 50,
+                        "JobCategoryCode": "1710",
+                    },
                     headers=headers,
                     delay=self.config.get("request_delay_seconds", 1.0),
                 )
@@ -61,6 +72,18 @@ class UsaJobsAdapter(SourceAdapter):
             salary_text = f"{salary_min}-{salary_max} {period}"
             currency = "USD"
         loc = payload.get("PositionLocationDisplay") or ""
+        summary = ""
+        user_area = payload.get("UserArea")
+        if isinstance(user_area, dict):
+            details = user_area.get("Details") or {}
+            if isinstance(details, dict):
+                summary = str(details.get("JobSummary") or "")
+        qual = str(payload.get("QualificationSummary") or "")
+        blob = f"{summary}\n{qual}".lower()
+        # Federal JOAs almost always require US citizenship — flag, never invent sponsorship.
+        notes = []
+        if "citizen" in blob:
+            notes.append("US citizenship likely required (federal)")
         return RawJobRecord(
             source_name=self.source_name,
             source_type=self.source_type,
@@ -68,10 +91,8 @@ class UsaJobsAdapter(SourceAdapter):
             source_url=payload.get("PositionURI") or "",
             title=str(payload.get("PositionTitle") or ""),
             company=payload.get("OrganizationName"),
-            description_html=payload.get("UserArea", {}).get("Details", {}).get("JobSummary")
-            if isinstance(payload.get("UserArea"), dict)
-            else payload.get("QualificationSummary"),
-            description_text=strip_html(payload.get("QualificationSummary")),
+            description_html=summary or None,
+            description_text=strip_html(qual or summary),
             location_text=loc,
             salary_text=salary_text,
             salary_min=salary_min,
@@ -82,6 +103,6 @@ class UsaJobsAdapter(SourceAdapter):
             closing_date=parse_date(payload.get("ApplicationCloseDate")),
             apply_url=payload.get("ApplyURI", [None])[0] if isinstance(payload.get("ApplyURI"), list) else payload.get("PositionURI"),
             direct_employer_url=payload.get("PositionURI"),
-            raw_payload={"who_may_apply": payload.get("JobGrade")},
+            raw_payload={"who_may_apply": payload.get("JobGrade"), "usajobs_notes": notes},
             source_preference=SourcePreference.GOVERNMENT,
         )

@@ -19,6 +19,8 @@ candidate:
     - US teaching license already held (unless a posting does not require one)
     - Special education specialist unless the ad is generalist primary
     - Secondary subject-matter specialist (high-school only) as primary fit
+    - Spanish teacher / Spanish immersion / bilingual-Spanish classroom
+    - Supply chain, logistics, warehouse, or fulfillment roles
 
 primary_capabilities:
   - primary teacher
@@ -33,7 +35,6 @@ primary_capabilities:
   - ESL
   - English teaching
   - Afrikaans
-  - bilingual
   - early elementary
   - formative assessment
   - parent communication
@@ -56,18 +57,20 @@ job_families:
       - K-5 Teacher
       - Lower Elementary Teacher
       - Teacher Grades 1-5
+      - Self-Contained Teacher
     keywords:
       - elementary teacher
       - primary teacher
-      - grade 1
-      - grade 2
-      - grade 3
-      - grade 4
-      - grade 5
+      - grade 1 teacher
+      - grade 2 teacher
+      - grade 3 teacher
+      - grade 4 teacher
+      - grade 5 teacher
       - grades 1-5
       - k-5
       - classroom teacher
       - homeroom
+      - self-contained
       - elementary school
       - primary school
   esl_language:
@@ -80,8 +83,7 @@ job_families:
       - TEFL Teacher
       - Online English Teacher
       - ESL Tutor
-      - Language Tutor
-      - Bilingual Teacher
+      - English Tutor
     keywords:
       - esl
       - ell
@@ -90,31 +92,30 @@ job_families:
       - tesol
       - english teacher
       - english tutor
-      - language tutor
       - online english
-      - bilingual teacher
+      - esl tutor
   remote_education:
-    weight: 0.75
+    weight: 0.95
     titles:
       - Online Teacher
       - Virtual Teacher
       - Remote Teacher
-      - Tutor
       - Online Tutor
+      - Virtual Tutor
+      - Remote Tutor
       - Curriculum Specialist
       - Instructional Designer
-      - Learning Experience
       - Teacher Success
       - Content Specialist Education
     keywords:
       - online teacher
       - virtual teacher
-      - remote tutor
+      - remote teacher
       - online tutor
+      - virtual tutor
+      - remote tutor
       - curriculum specialist
       - instructional design
-      - edtech
-      - learning experience
       - teacher success
       - academic tutor
   admin_assistant:
@@ -127,9 +128,7 @@ job_families:
       - Executive Assistant
       - School Secretary
       - Receptionist
-      - Office Coordinator
-      - Front Desk
-      - Clerk
+      - School Office Coordinator
     keywords:
       - administrative assistant
       - admin assistant
@@ -137,9 +136,8 @@ job_families:
       - office administrator
       - executive assistant
       - school secretary
+      - school office
       - receptionist
-      - office coordinator
-      - front desk
 
 geographic:
   remote:
@@ -194,6 +192,26 @@ hard_filters:
   hard_reject_us_citizenship_required: false
   never_invent_salary: true
   never_use_third_party_salary_estimates: true
+  # Title/subject exclusions — Nina is generalist primary (1–5), English/Afrikaans, not Spanish/logistics.
+  reject_title_phrases:
+    - spanish teacher
+    - spanish immersion
+    - bilingual spanish
+    - dual language spanish
+    - french teacher
+    - german teacher
+    - mandarin teacher
+    - chinese teacher
+    - pe teacher
+    - physical education teacher
+    - supply chain
+    - logistics coordinator
+    - warehouse clerk
+    - shipping clerk
+    - inventory clerk
+    - fulfillment
+    - procurement
+    - customer success
 
 sponsorship_signals:
   boost_phrases:

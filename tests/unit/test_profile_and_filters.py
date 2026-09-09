@@ -49,6 +49,13 @@ def test_family_matches_elementary_and_admin():
     assert is_family_relevant("Elementary Teacher - Grade 3", "literacy and numeracy", profile)
     assert is_family_relevant("Administrative Assistant", "school office scheduling", profile)
     assert not is_family_relevant("Mechanical Engineer", "pipeline design dams", profile)
+    assert not is_family_relevant("Spanish Teacher - Grade 3", "elementary Spanish immersion", profile)
+    assert not is_family_relevant("Supply Chain Clerk", "warehouse shipping for school district", profile)
+    assert not is_family_relevant(
+        "Customer Success Manager",
+        "Support classroom teachers and learning experience platforms in elementary schools",
+        profile,
+    )
 
 
 def test_us_only_remote_accepted_for_nina():

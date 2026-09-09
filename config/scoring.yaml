@@ -18,33 +18,28 @@ categories:
   Low: [0, 54]
 
 digest_minimum_category: Possible
-low_score_cutoff: 55
+low_score_cutoff: 60
 
 professional_positive:
   - elementary teacher
   - primary teacher
   - classroom teacher
-  - grade 1
-  - grade 2
-  - grade 3
-  - grade 4
-  - grade 5
   - grades 1-5
   - k-5
   - homeroom
+  - self-contained
   - esl
   - ell
   - eld
   - tefl
   - tesol
   - english teacher
-  - bilingual
   - afrikaans
   - online teacher
   - virtual teacher
-  - tutor
-  - curriculum
-  - instructional
+  - online tutor
+  - remote teacher
+  - elementary tutor
 
 skills_positive:
   - lesson planning
@@ -135,6 +130,32 @@ unrelated_roles:
   - software engineer
   - bartender
   - warehouse associate
+  - supply chain
+  - logistics
+  - procurement
+  - fulfillment
+  - warehouse clerk
+  - shipping clerk
+  - inventory clerk
+  - receiving clerk
+  - freight
+  - distribution center
+  - materials handler
+  - spanish teacher
+  - spanish immersion
+  - bilingual spanish
+  - dual language spanish
+  - french teacher
+  - german teacher
+  - mandarin teacher
+  - chinese teacher
+  - pe teacher
+  - physical education
+  - band teacher
+  - music teacher
+  - art teacher
+  - customer success
+  - account executive
 
 operations_positive:
   - administrative assistant
@@ -144,7 +165,7 @@ operations_positive:
   - receptionist
   - office coordinator
   - front desk
-  - clerk
+  - school clerk
   - registrar
 
 work_mode_boost:

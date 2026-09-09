@@ -66,6 +66,7 @@ def select_digest_jobs(
     *,
     previous_by_fp: dict[str, CanonicalJobRecord] | None = None,
     min_category: FitCategory = FitCategory.POSSIBLE,
+    min_score: int | None = None,
 ) -> DigestSelection:
     previous_by_fp = previous_by_fp or {}
     rank = {
@@ -82,6 +83,8 @@ def select_digest_jobs(
     returning: list[CanonicalJobRecord] = []
     for job in jobs:
         if not job.active or job.rejected:
+            continue
+        if min_score is not None and (job.fit_score is None or job.fit_score < min_score):
             continue
         if job.fit_category is None or rank.get(job.fit_category, 0) < min_rank:
             continue
@@ -458,7 +461,12 @@ def build_and_maybe_send(
         min_category = FitCategory.POSSIBLE
     jobs = repo.list_digest_candidates(repo.last_digest_at(), min_score)
     previous = {job.canonical_fingerprint: job for job in jobs if job.last_notified_at}
-    selection = select_digest_jobs(jobs, previous_by_fp=previous, min_category=min_category)
+    selection = select_digest_jobs(
+        jobs,
+        previous_by_fp=previous,
+        min_category=min_category,
+        min_score=min_score,
+    )
     health = {
         "sources_ok": 0,
         "sources_failed": 0,

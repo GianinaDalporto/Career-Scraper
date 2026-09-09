@@ -58,7 +58,7 @@ def score_job(
     prof_hits = _hits(blob, scoring.get("professional_positive") or [])
     breakdown.professional_relevance = _scale(len(prof_hits), 5, float(weights.get("professional_relevance", 25)))
     if prof_hits:
-        reasons.append(f"Mechanical/infrastructure language matches your background: {', '.join(prof_hits[:4])}.")
+        reasons.append(f"Teaching/education language matches your background: {', '.join(prof_hits[:4])}.")
 
     skill_hits = _hits(blob, scoring.get("skills_positive") or [])
     breakdown.skills = _scale(len(skill_hits), 4, float(weights.get("skills", 18)))
@@ -66,9 +66,9 @@ def score_job(
         reasons.append(f"Required methods overlap your practice: {', '.join(skill_hits[:4])}.")
 
     sen_hits = _hits(blob, scoring.get("seniority_positive") or [])
-    breakdown.seniority = _scale(max(len(sen_hits), 1 if "engineer" in title else 0), 2, float(weights.get("seniority", 8)))
+    breakdown.seniority = _scale(len(sen_hits), 2, float(weights.get("seniority", 8)))
     if sen_hits:
-        reasons.append(f"Seniority ({', '.join(sen_hits)}) aligns with acting Chief Engineer / design leadership.")
+        reasons.append(f"Seniority ({', '.join(sen_hits)}) aligns with lead / mentor teacher experience.")
 
     sector_hits = _hits(blob, scoring.get("sectors_high") or [])
     breakdown.sector = _scale(len(sector_hits), 3, float(weights.get("sector", 12)))
@@ -88,7 +88,7 @@ def score_job(
         breakdown.penalties += 25
         concerns.append(
             "Advert asks for specialist software-engineering experience "
-            f"({', '.join(overclaim[:3])}) beyond AI-assisted / web / automation transfer."
+            f"({', '.join(overclaim[:3])}) beyond classroom / online-teaching tools."
         )
     else:
         breakdown.digital_transferability = _scale(len(digital_hits), 3, digital_weight)
@@ -98,28 +98,38 @@ def score_job(
                 f"Software specialism still listed ({', '.join(overclaim[:2])}); treat digital fit as transferable, not equivalent."
             )
         elif digital_hits:
-            reasons.append(f"Transferable digital skills apply: {', '.join(digital_hits[:3])}.")
+            reasons.append(f"Online / classroom digital tools apply: {', '.join(digital_hits[:3])}.")
 
     ops_hits = _hits(blob, scoring.get("operations_positive") or [])
     breakdown.operations_alt = _scale(len(ops_hits), 2, float(weights.get("operations_alt", 6)))
     if ops_hits:
-        reasons.append(f"Operations/property transfer: {', '.join(ops_hits[:3])}.")
+        reasons.append(f"School / office admin overlap: {', '.join(ops_hits[:3])}.")
 
-    unrelated = _hits(title, scoring.get("unrelated_roles") or []) + _hits(blob, scoring.get("unrelated_roles") or [])
+    unrelated = _hits(title, scoring.get("unrelated_roles") or [])
+    if not unrelated:
+        unrelated = _hits(blob, scoring.get("unrelated_roles") or [])
     if unrelated:
-        breakdown.penalties += 40
+        breakdown.penalties += 50
         concerns.append(f"Core occupation appears unrelated ({', '.join(unrelated[:2])}).")
 
-    # Compensation above floor (already gated).
+    # Compensation above floor (already gated) — floors from salary_policy.yaml.
+    from job_scout.config.settings import load_salary_policy
+
+    policy = load_salary_policy()
+    floors_cfg = policy.get("currency_floors_monthly") or {}
     comp_weight = float(weights.get("compensation", 7))
     multiple = None
     if job.salary.min_monthly and job.salary.currency:
-        floors = {"ZAR": 70000.0, "USD": 4500.0, "EUR": 4000.0}
-        floor = floors.get(job.salary.currency.upper())
-        if floor:
-            multiple = float(job.salary.min_monthly) / floor
+        floor = floors_cfg.get(job.salary.currency.upper())
+        if floor is not None:
+            multiple = float(job.salary.min_monthly) / float(floor)
     if multiple is None and job.salary.usd_monthly:
-        multiple = float(job.salary.usd_monthly) / 2800.0
+        usd_floor = float(
+            (policy.get("default_international_floor") or {}).get("amount_monthly")
+            or floors_cfg.get("USD")
+            or 2800
+        )
+        multiple = float(job.salary.usd_monthly) / usd_floor
     if multiple is not None:
         breakdown.compensation = min(comp_weight, 4.0 + max(0.0, multiple - 1.0) * 6.0)
         reasons.append("Employer-published salary meets or exceeds the configured floor.")
@@ -148,6 +158,9 @@ def score_job(
     if "preferred_us_state" in job.flags:
         breakdown.work_mode += float(wm_boost.get("preferred_us_state", 6))
         reasons.append("Location is in a preferred US state.")
+    elif "us_outside_preferred_states" in job.flags:
+        breakdown.penalties += 4
+        concerns.append("US location is outside preferred Southern / Bible Belt states.")
 
     notes = (job.mobility.work_authorisation_notes or "").lower()
     if job.mobility.visa_sponsorship:
@@ -209,21 +222,45 @@ def score_job(
         - breakdown.penalties
     )
     score = int(max(0, min(100, round(total))))
+    # Floor only for generalist primary / ESL-English / remote teaching / school admin —
+    # never for bare "grade N" alone (Spanish Grade 1 Teacher used to jump to 72).
+    subject_blocked = any(
+        phrase in title
+        for phrase in (
+            "spanish",
+            "french",
+            "german",
+            "mandarin",
+            "chinese",
+            "physical education",
+            "pe teacher",
+            "supply chain",
+            "logistics",
+            "warehouse",
+        )
+    )
     core_titles = (
         "elementary teacher",
         "primary teacher",
         "classroom teacher",
+        "homeroom",
+        "self-contained",
         "esl teacher",
-        "english teacher",
+        "ell teacher",
+        "eld teacher",
         "online teacher",
-        "grade 1",
-        "grade 2",
-        "grade 3",
-        "grade 4",
-        "grade 5",
+        "virtual teacher",
+        "remote teacher",
+        "online tutor",
+        "virtual tutor",
         "administrative assistant",
+        "school secretary",
     )
-    if any(token in title for token in core_titles) and breakdown.sector >= 3 and breakdown.penalties < 10:
+    generalist = any(token in title for token in core_titles) or (
+        any(f"grade {n} teacher" in title for n in range(1, 6))
+        and ("elementary" in title or "primary" in title or "homeroom" in title)
+    )
+    if generalist and not subject_blocked and breakdown.sector >= 3 and breakdown.penalties < 10:
         score = max(score, 72)
     job.fit_score = score
     job.fit_category = category_for(score, scoring)

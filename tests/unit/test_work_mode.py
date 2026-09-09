@@ -42,3 +42,33 @@ def test_city_country_without_onsite_keyword_is_onsite():
         source_hint=None,
     )
     assert mode == WorkMode.ONSITE
+
+
+def test_remote_learning_tools_do_not_block_onsite_teaching():
+    mode = classify_work_mode(
+        title="Grade 2 Teacher",
+        description="Elementary classroom teacher using remote learning tools when needed.",
+        location="Houston, TX, United States",
+        source_hint=None,
+    )
+    assert mode == WorkMode.ONSITE
+
+
+def test_virtual_teacher_is_remote():
+    mode = classify_work_mode(
+        title="Virtual Elementary Teacher",
+        description="Teach K-5 online full time.",
+        location="Texas, United States",
+        source_hint=None,
+    )
+    assert mode == WorkMode.REMOTE
+
+
+def test_remote_board_hint_with_usa_location_stays_remote():
+    mode = classify_work_mode(
+        title="Online ESL Teacher",
+        description="Deliver live online English lessons.",
+        location="United States",
+        source_hint="remote",
+    )
+    assert mode == WorkMode.REMOTE
