@@ -1,0 +1,245 @@
+defaults:
+  timeout_seconds: 25
+  retries: 3
+  backoff_seconds: 1.5
+  request_delay_seconds: 1.0
+  max_pages: 4
+  max_job_age_days: 60
+  max_jobs_per_source: 250
+  user_agent_env: JOB_SCOUT_USER_AGENT
+
+# Nina Scout — education / admin focus. No LinkedIn/Indeed scraping.
+
+sources:
+  remoteok:
+    enabled: true
+    adapter: job_scout.adapters.remote.remoteok:RemoteOKAdapter
+    source_type: api
+    pipelines: [remote]
+    regions: [global]
+    coverage: {remote: true, hybrid: false, onsite: false}
+    preference: aggregator
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: true
+    notes: Public JSON. Family filter keeps teaching/tutoring/admin hits.
+
+  remotive:
+    enabled: true
+    adapter: job_scout.adapters.remote.remotive:RemotiveAdapter
+    source_type: api
+    pipelines: [remote]
+    regions: [global]
+    coverage: {remote: true, hybrid: false, onsite: false}
+    preference: specialist_board
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    notes: Public API. Good for remote education / customer success / admin-adjacent.
+
+  jobicy:
+    enabled: true
+    adapter: job_scout.adapters.remote.jobicy:JobicyAdapter
+    source_type: api
+    pipelines: [remote]
+    regions: [global]
+    coverage: {remote: true, hybrid: false, onsite: false}
+    preference: specialist_board
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: true
+
+  himalayas:
+    enabled: true
+    adapter: job_scout.adapters.remote.himalayas:HimalayasAdapter
+    source_type: api
+    pipelines: [remote]
+    regions: [global]
+    coverage: {remote: true, hybrid: false, onsite: false}
+    preference: specialist_board
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: true
+    max_pages: 3
+
+  weworkremotely:
+    enabled: true
+    adapter: job_scout.adapters.remote.weworkremotely:WeWorkRemotelyAdapter
+    source_type: rss
+    pipelines: [remote]
+    regions: [global]
+    coverage: {remote: true, hybrid: false, onsite: false}
+    preference: specialist_board
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+
+  remote1stjobs:
+    enabled: true
+    adapter: job_scout.adapters.remote.remote1stjobs:Remote1stJobsAdapter
+    source_type: api
+    pipelines: [remote]
+    regions: [global]
+    coverage: {remote: true, hybrid: false, onsite: false}
+    preference: specialist_board
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+
+  greenhouse:
+    enabled: true
+    adapter: job_scout.adapters.ats.greenhouse:GreenhouseAdapter
+    source_type: ats
+    pipelines: [remote, hybrid, onsite]
+    regions: [US, global]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: employer_ats
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    employers:
+      - {name: IXL Learning, slug: ixl-learning}
+      - {name: Age of Learning, slug: ageoflearning}
+    notes: Add more US education / edtech Greenhouse boards as verified.
+
+  lever:
+    enabled: true
+    adapter: job_scout.adapters.ats.lever:LeverAdapter
+    source_type: ats
+    pipelines: [remote, hybrid, onsite]
+    regions: [US, global]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: employer_ats
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    employers: []
+    notes: Add district / edtech Lever boards when slugs are verified.
+
+  ashby:
+    enabled: true
+    adapter: job_scout.adapters.ats.ashby:AshbyAdapter
+    source_type: ats
+    pipelines: [remote, hybrid, onsite]
+    regions: [US, global]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: employer_ats
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: true
+    employers:
+      - {name: Amplify, slug: amplify}
+    notes: Curriculum / edtech roles (e.g. Amplify).
+
+  smartrecruiters:
+    enabled: false
+    adapter: job_scout.adapters.ats.smartrecruiters:SmartRecruitersAdapter
+    source_type: ats
+    pipelines: [remote, hybrid, onsite]
+    regions: [US, global]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: employer_ats
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    employers: []
+    notes: Enable when education employers are verified.
+
+  workable:
+    enabled: false
+    adapter: job_scout.adapters.ats.workable:WorkableAdapter
+    source_type: ats
+    pipelines: [remote, hybrid, onsite]
+    regions: [US, global]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: employer_ats
+    free: true
+    auth_required: false
+    javascript_required: false
+    salary_often_available: false
+    employers: []
+
+  usajobs:
+    enabled: false
+    adapter: job_scout.adapters.regional.usajobs:UsaJobsAdapter
+    source_type: api
+    pipelines: [hybrid, onsite]
+    regions: [US]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: government
+    free: true
+    auth_required: true
+    javascript_required: false
+    salary_often_available: true
+    notes: Optional. Many federal roles require US citizenship — flag via mobility.
+
+  adzuna:
+    enabled: false
+    adapter: job_scout.adapters.regional.adzuna:AdzunaAdapter
+    source_type: api
+    pipelines: [hybrid, onsite, remote]
+    regions: [US]
+    coverage: {remote: true, hybrid: true, onsite: true}
+    preference: aggregator
+    free: true
+    auth_required: true
+    javascript_required: false
+    salary_often_available: true
+    notes: Enable with ADZUNA_APP_ID / ADZUNA_APP_KEY for US education + admin queries.
+
+  # Intentionally disabled for Nina (engineering / ZA / EU-centric Job Scout sources)
+  dpsa_circular:
+    enabled: false
+    adapter: job_scout.adapters.regional.dpsa_circular:DpsaCircularAdapter
+    source_type: html
+    pipelines: [onsite]
+    regions: [ZA]
+    notes: ZA public service — not in Nina scope.
+
+  eures:
+    enabled: false
+    adapter: job_scout.adapters.regional.eures:EuresAdapter
+    source_type: api
+    pipelines: [hybrid, onsite]
+    regions: [EU]
+    notes: EU focus — not primary for Nina.
+
+  arbeitnow:
+    enabled: false
+    adapter: job_scout.adapters.regional.arbeitnow:ArbeitnowAdapter
+    source_type: api
+    pipelines: [hybrid, onsite, remote]
+    regions: [EU]
+    notes: EU focus — disabled.
+
+  reliefweb:
+    enabled: false
+    adapter: job_scout.adapters.regional.reliefweb:ReliefWebAdapter
+    source_type: rss
+    pipelines: [hybrid, onsite, remote]
+    regions: [global]
+    notes: Humanitarian/infra — disabled for teacher profile.
+
+disabled_not_implemented:
+  linkedin:
+    reason: ToS / anti-bot.
+  indeed:
+    reason: ToS / anti-bot.
+  teachers_teachers:
+    reason: No stable official public API; evaluate AppliTrack/Frontline district feeds later.
+  schoolspring:
+    reason: Commercial board; no free official API confirmed.
+  teachaway:
+    reason: Niche board; no official public jobs API/RSS verified yet.
+  district_career_pages:
+    reason: Add specific AppliTrack / Frontline / PowerSchool boards per district as adapters when URLs are known.

@@ -1,0 +1,38 @@
+# Employer-published salary only. Never invent figures.
+
+currency_floors_monthly:
+  USD: 2800
+  ZAR: 40000
+  EUR: 2600
+
+default_international_floor:
+  currency: USD
+  amount_monthly: 2800
+
+no_maximum: true
+
+rules:
+  # Many US district ads omit salary; allow missing for onsite/hybrid and flag instead.
+  onsite_requires_published_salary: false
+  hybrid_requires_published_salary: false
+  remote_allows_missing_salary: true
+  reject_known_salary_below_floor: true
+  range_uses_lower_bound: true
+  never_invent_missing_salary: true
+  never_infer_from_glassdoor_or_estimates: true
+  store_published_separately_from_estimates: true
+  flag_onsite_salary_not_published: true
+
+fx:
+  provider: frankfurter
+  api_url: https://api.frankfurter.dev/v1/latest
+  cache_daily: true
+  fallback_to_stale_cache: true
+  never_fabricate_rate: true
+
+normalisation:
+  annual_divisor: 12
+  weekly_multiplier: 4.3333333333
+  daily_days_per_week: 5
+  # Do not invent hours for hourly tutoring — leave monthly null when hours unknown.
+  weeks_per_year: 52

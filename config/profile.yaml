@@ -1,0 +1,211 @@
+candidate:
+  name: "Nina — Primary teacher (grades 1–5)"
+  summary: >
+    South African primary-school teacher (grades 1–5) with a Bachelor of Education,
+    TEFL certification, and about four years of classroom experience. Fluent in
+    English and Afrikaans. Targeting United States onsite/hybrid teaching roles
+    (especially Southern / Bible Belt states), with openness to J-1 / H-1B
+    sponsorship or self-sponsorship pathways; also remote full-time or part-time
+    tutoring / online teaching / curriculum / edtech; and US administrative
+    assistant roles.
+  qualifications:
+    - Bachelor of Education
+    - TEFL
+    - Approximately 4 years teaching experience
+    - Fluent English
+    - Fluent Afrikaans
+  nationality: South African
+  do_not_claim:
+    - US teaching license already held (unless a posting does not require one)
+    - Special education specialist unless the ad is generalist primary
+    - Secondary subject-matter specialist (high-school only) as primary fit
+
+primary_capabilities:
+  - primary teacher
+  - elementary teacher
+  - grades 1-5
+  - classroom teaching
+  - lesson planning
+  - classroom management
+  - literacy
+  - numeracy
+  - TEFL
+  - ESL
+  - English teaching
+  - Afrikaans
+  - bilingual
+  - early elementary
+  - formative assessment
+  - parent communication
+  - differentiated instruction
+
+job_families:
+  primary_teaching:
+    weight: 1.0
+    titles:
+      - Elementary Teacher
+      - Primary Teacher
+      - Grade 1 Teacher
+      - Grade 2 Teacher
+      - Grade 3 Teacher
+      - Grade 4 Teacher
+      - Grade 5 Teacher
+      - Homeroom Teacher
+      - Classroom Teacher
+      - Elementary Classroom Teacher
+      - K-5 Teacher
+      - Lower Elementary Teacher
+      - Teacher Grades 1-5
+    keywords:
+      - elementary teacher
+      - primary teacher
+      - grade 1
+      - grade 2
+      - grade 3
+      - grade 4
+      - grade 5
+      - grades 1-5
+      - k-5
+      - classroom teacher
+      - homeroom
+      - elementary school
+      - primary school
+  esl_language:
+    weight: 0.9
+    titles:
+      - ESL Teacher
+      - ELL Teacher
+      - ELD Teacher
+      - English Teacher
+      - TEFL Teacher
+      - Online English Teacher
+      - ESL Tutor
+      - Language Tutor
+      - Bilingual Teacher
+    keywords:
+      - esl
+      - ell
+      - eld
+      - tefl
+      - tesol
+      - english teacher
+      - english tutor
+      - language tutor
+      - online english
+      - bilingual teacher
+  remote_education:
+    weight: 0.75
+    titles:
+      - Online Teacher
+      - Virtual Teacher
+      - Remote Teacher
+      - Tutor
+      - Online Tutor
+      - Curriculum Specialist
+      - Instructional Designer
+      - Learning Experience
+      - Teacher Success
+      - Content Specialist Education
+    keywords:
+      - online teacher
+      - virtual teacher
+      - remote tutor
+      - online tutor
+      - curriculum specialist
+      - instructional design
+      - edtech
+      - learning experience
+      - teacher success
+      - academic tutor
+  admin_assistant:
+    weight: 0.7
+    titles:
+      - Administrative Assistant
+      - Admin Assistant
+      - Office Assistant
+      - Office Administrator
+      - Executive Assistant
+      - School Secretary
+      - Receptionist
+      - Office Coordinator
+      - Front Desk
+      - Clerk
+    keywords:
+      - administrative assistant
+      - admin assistant
+      - office assistant
+      - office administrator
+      - executive assistant
+      - school secretary
+      - receptionist
+      - office coordinator
+      - front desk
+
+geographic:
+  remote:
+    origin_anywhere: true
+    prefer_scopes:
+      - worldwide
+      - anywhere
+      - global
+      - us_only
+      - unknown
+    # Nina is targeting the USA — US-only remote is desirable, not a reject.
+    reject_us_only: false
+    reject_australia_only: true
+    reject_europe_only: true
+    reject_if_explicitly_excludes_south_africa: false
+    keep_unknown: true
+    flag_unknown: true
+  onsite_hybrid_countries:
+    - US
+  preferred_us_states:
+    - TX
+    - AL
+    - TN
+    - SC
+    - NC
+    - KY
+    - FL
+    - CO
+    - GA
+    - MS
+    - LA
+    - AR
+    - OK
+    - VA
+    - WV
+    - MO
+  search_regions:
+    - United States (Southern / Bible Belt preferred)
+    - United States remote
+  assume_work_rights:
+    ZA: true
+    US: false
+
+hard_filters:
+  reject_inactive: true
+  reject_expired: true
+  reject_empty_title: true
+  reject_empty_company_optional: false
+  flag_unknown_visa_status: true
+  # Existing US work-authorisation requirements: flag in scoring/digest, never hard-reject.
+  hard_reject_existing_work_auth_required: false
+  hard_reject_us_citizenship_required: false
+  never_invent_salary: true
+  never_use_third_party_salary_estimates: true
+
+sponsorship_signals:
+  boost_phrases:
+    - visa sponsorship
+    - will sponsor
+    - j-1
+    - j1
+    - h-1b
+    - h1b
+    - international teacher
+    - exchange visitor
+    - sponsorship available
+    - self sponsorship
+    - self-sponsor
+    - green card

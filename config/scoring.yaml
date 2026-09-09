@@ -1,0 +1,171 @@
+weights:
+  professional_relevance: 28
+  skills: 16
+  seniority: 6
+  sector: 10
+  leadership_pm: 6
+  digital_transferability: 4
+  operations_alt: 8
+  compensation: 6
+  work_mode: 6
+  international_mobility: 10
+
+categories:
+  Exceptional: [90, 100]
+  Strong: [80, 89]
+  Good: [70, 79]
+  Possible: [55, 69]
+  Low: [0, 54]
+
+digest_minimum_category: Possible
+low_score_cutoff: 55
+
+professional_positive:
+  - elementary teacher
+  - primary teacher
+  - classroom teacher
+  - grade 1
+  - grade 2
+  - grade 3
+  - grade 4
+  - grade 5
+  - grades 1-5
+  - k-5
+  - homeroom
+  - esl
+  - ell
+  - eld
+  - tefl
+  - tesol
+  - english teacher
+  - bilingual
+  - afrikaans
+  - online teacher
+  - virtual teacher
+  - tutor
+  - curriculum
+  - instructional
+
+skills_positive:
+  - lesson planning
+  - classroom management
+  - literacy
+  - numeracy
+  - differentiated instruction
+  - formative assessment
+  - parent communication
+  - iep
+  - reading
+  - phonics
+  - early childhood
+  - student engagement
+  - online tutoring
+  - zoom
+  - google classroom
+  - canvas
+  - administrative support
+  - scheduling
+  - data entry
+  - microsoft office
+  - google workspace
+
+seniority_positive:
+  - lead teacher
+  - senior teacher
+  - mentor teacher
+  - grade level lead
+
+seniority_not_required:
+  - entry level
+  - associate
+  - assistant teacher
+
+sectors_high:
+  - elementary
+  - primary school
+  - k-12
+  - public school
+  - charter school
+  - private school
+  - international school
+  - online education
+  - edtech
+  - tutoring
+  - curriculum
+  - school district
+  - education nonprofit
+
+leadership_positive:
+  - lead teacher
+  - mentor
+  - grade level
+  - team lead
+  - coordinating
+
+digital_positive:
+  - google classroom
+  - canvas
+  - online teaching
+  - virtual classroom
+  - learning management
+  - edtech
+
+digital_overclaim_penalties:
+  - senior software engineer
+  - machine learning engineer
+  - data scientist
+  - devops
+  - backend engineer
+
+unrelated_roles:
+  - surgeon
+  - physician
+  - nurse
+  - accountant
+  - auditor
+  - lawyer
+  - attorney
+  - pharmacist
+  - dentist
+  - chef
+  - truck driver
+  - police
+  - mechanical engineer
+  - civil engineer
+  - software engineer
+  - bartender
+  - warehouse associate
+
+operations_positive:
+  - administrative assistant
+  - admin assistant
+  - office assistant
+  - school secretary
+  - receptionist
+  - office coordinator
+  - front desk
+  - clerk
+  - registrar
+
+work_mode_boost:
+  remote_global: 4
+  remote_unknown: 2
+  hybrid: 3
+  onsite: 4
+  preferred_us_state: 6
+
+mobility_boost:
+  visa_sponsorship: 12
+  j1_or_h1b: 10
+  international_teacher_program: 10
+  relocation: 6
+  globally_distributed: 2
+
+mobility_penalty:
+  citizenship_required: 8
+  unrestricted_work_rights: 6
+  missing_licence: 4
+
+compensation:
+  bonus_start_multiple_of_floor: 1.15
+  max_bonus_points: 6

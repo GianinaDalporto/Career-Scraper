@@ -1,0 +1,55 @@
+name: digest
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+      timezone: "Africa/Johannesburg"
+  workflow_dispatch:
+
+concurrency:
+  group: job-scout-digest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      JOB_SCOUT_ENV: github
+      JOB_SCOUT_SEND_EMAIL: "true"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e .
+      - name: Verify secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          DIGEST_TO: ${{ secrets.DIGEST_TO }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY repository secrets."
+            exit 1
+          fi
+          if [ -z "$RESEND_API_KEY" ] || [ -z "$RESEND_FROM" ] || [ -z "$DIGEST_TO" ]; then
+            echo "Missing RESEND_API_KEY, RESEND_FROM or DIGEST_TO repository secrets."
+            exit 1
+          fi
+          echo "Digest secrets are present."
+      - name: Send digest
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          DIGEST_TO: ${{ secrets.DIGEST_TO }}
+        run: python -m job_scout digest --send
