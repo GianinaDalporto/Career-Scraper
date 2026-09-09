@@ -431,6 +431,9 @@ def send_resend(subject: str, html_body: str, settings: Settings) -> dict[str, A
         "html": html_body,
         "text": "This digest is HTML. Open it in an HTML-capable client.",
     }
+    cc = settings.digest_cc.strip()
+    if cc and cc.casefold() != settings.digest_to.strip().casefold():
+        payload["cc"] = [cc]
     headers = {
         "Authorization": f"Bearer {settings.resend_api_key}",
         "Content-Type": "application/json",

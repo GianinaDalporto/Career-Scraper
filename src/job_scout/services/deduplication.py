@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from rapidfuzz import fuzz
 
@@ -18,16 +19,86 @@ PREFERENCE_RANK = {
     SourcePreference.AGGREGATOR: 4,
 }
 
+# Query keys that identify a distinct vacancy (must survive canonicalisation).
+IDENTITY_QUERY_KEYS = frozenset(
+    {
+        "applitrackjobid",
+        "gh_jid",
+        "requisitionid",
+        "requisition_id",
+        "req_id",
+        "reqid",
+        "jobid",
+        "job_id",
+        "postingid",
+        "posting_id",
+        "ats_job_id",
+        "display_job_id",
+        "pid",
+    }
+)
+
+TRACKING_QUERY_KEYS = frozenset(
+    {
+        "fbclid",
+        "gclid",
+        "gbraid",
+        "wbraid",
+        "mc_cid",
+        "mc_eid",
+        "_ga",
+        "msclkid",
+        "ref",
+        "referrer",
+        "source",
+        "campaign",
+        "medium",
+    }
+)
+
 
 def canonical_url(url: str | None) -> str:
+    """Normalise a job URL for dedupe.
+
+    Strips known tracking parameters but keeps identity-bearing query keys
+    (e.g. AppliTrackJobId). Fragments are preserved for DPSA circular posts.
+    """
     if not url:
         return ""
-    text = url.strip().lower().split("?", 1)[0]
-    # Keep fragments — DPSA posts share a PDF URL and disambiguate with #POST-id.
-    if "#" in text:
-        base, frag = text.split("#", 1)
-        return f"{base.rstrip('/')}" + (f"#{frag}" if frag else "")
-    return text.rstrip("/")
+    parts = urlsplit(url.strip())
+    scheme = (parts.scheme or "https").lower()
+    netloc = parts.netloc.lower()
+    path = parts.path or ""
+    if path != "/" and path.endswith("/"):
+        path = path.rstrip("/")
+
+    kept: list[tuple[str, str]] = []
+    for key, value in parse_qsl(parts.query, keep_blank_values=False):
+        lower = key.lower()
+        if lower.startswith("utm_") or lower in TRACKING_QUERY_KEYS:
+            continue
+        if lower in IDENTITY_QUERY_KEYS:
+            kept.append((lower, value))
+    kept.sort()
+    query = urlencode(kept)
+    base = urlunsplit((scheme, netloc, path, query, ""))
+    fragment = parts.fragment
+    if fragment:
+        return f"{base}#{fragment}"
+    return base
+
+
+def identity_query_values(url: str | None) -> frozenset[tuple[str, str]]:
+    """Return identity query pairs from a URL (empty if none)."""
+    if not url:
+        return frozenset()
+    parts = urlsplit(url.strip())
+    found: set[tuple[str, str]] = set()
+    for key, value in parse_qsl(parts.query, keep_blank_values=False):
+        lower = key.lower()
+        if lower in IDENTITY_QUERY_KEYS and value:
+            found.add((lower, value))
+    return frozenset(found)
 
 
 def _shared_document_url(url: str | None) -> bool:
@@ -38,6 +109,9 @@ def _shared_document_url(url: str | None) -> bool:
     if lowered.endswith(".pdf"):
         return True
     if "dpsa.gov.za" in lowered and ("/psvc" in lowered or "/vacancies/" in lowered):
+        return True
+    # AppliTrack tenant list dumps (Output.asp?all=1) are shared across vacancies.
+    if "applitrack.com" in lowered and "output.asp" in lowered and "applitrackjobid=" not in lowered:
         return True
     return False
 
@@ -125,6 +199,29 @@ class DuplicateIndex:
         self.by_fingerprint[job.canonical_fingerprint] = key
 
 
+def _distinct_requisition_urls(a: CanonicalJobRecord, b: CanonicalJobRecord) -> bool:
+    """True when both sides carry identity query params that disagree."""
+    pairs_a: set[tuple[str, str]] = set()
+    pairs_b: set[tuple[str, str]] = set()
+    for url in (a.apply_url, a.direct_employer_url, *(a.source_urls or [])):
+        pairs_a |= set(identity_query_values(url))
+    for url in (b.apply_url, b.direct_employer_url, *(b.source_urls or [])):
+        pairs_b |= set(identity_query_values(url))
+    if not pairs_a or not pairs_b:
+        return False
+    keys_a = {k for k, _ in pairs_a}
+    keys_b = {k for k, _ in pairs_b}
+    shared_keys = keys_a & keys_b
+    if not shared_keys:
+        return False
+    for key in shared_keys:
+        vals_a = {v for k, v in pairs_a if k == key}
+        vals_b = {v for k, v in pairs_b if k == key}
+        if vals_a.isdisjoint(vals_b):
+            return True
+    return False
+
+
 def _fuzzy_duplicate(a: CanonicalJobRecord, b: CanonicalJobRecord) -> bool:
     if company_key(a.company) != company_key(b.company):
         return False
@@ -133,6 +230,9 @@ def _fuzzy_duplicate(a: CanonicalJobRecord, b: CanonicalJobRecord) -> bool:
     if (a.city or "").lower() and (b.city or "").lower() and normalise_key(a.city) != normalise_key(b.city):
         return False
     if a.work_mode != b.work_mode:
+        return False
+    # Different AppliTrackJobId / gh_jid / etc. must never fuzzy-merge.
+    if _distinct_requisition_urls(a, b):
         return False
     title_score = fuzz.token_set_ratio(normalise_key(a.title), normalise_key(b.title))
     if title_score < 92:
@@ -145,6 +245,7 @@ def _fuzzy_duplicate(a: CanonicalJobRecord, b: CanonicalJobRecord) -> bool:
 
 def _salary_more_complete(incoming, existing) -> bool:
     """Prefer a published salary that has more structured fields filled in."""
+
     def score(snap) -> int:
         return sum(
             1

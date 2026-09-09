@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from job_scout.models.enums import SourcePreference
 from job_scout.models.job import NormalisedJobRecord, RawJobRecord
 from job_scout.services.geo import geo_from_raw
 from job_scout.services.mobility import extract_mobility
@@ -10,14 +11,38 @@ from job_scout.services.work_mode import classify_from_raw
 from job_scout.utils.text import company_key, sha256_text, strip_html
 
 
-def fingerprint(company: str | None, title: str, city: str | None, country: str | None, work_mode: str) -> str:
+def fingerprint(
+    company: str | None,
+    title: str,
+    city: str | None,
+    country: str | None,
+    work_mode: str,
+    requisition_id: str | None = None,
+) -> str:
+    """Stable identity hash.
+
+    Employer ATS / career / government posts include ``requisition_id`` so different
+    reqs with the same title and campus stay separate. Aggregators omit it so the
+    same advert seen on two boards can still fingerprint-match.
+    """
     return sha256_text(
         company_key(company),
         company_key(title),
         company_key(city),
         (country or "").upper(),
         work_mode,
+        (requisition_id or "").strip().lower(),
     )
+
+
+def requisition_for_fingerprint(raw: RawJobRecord) -> str | None:
+    if raw.source_preference in {
+        SourcePreference.EMPLOYER_ATS,
+        SourcePreference.EMPLOYER_CAREER,
+        SourcePreference.GOVERNMENT,
+    }:
+        return (raw.source_job_id or "").strip() or None
+    return None
 
 
 def normalise_job(raw: RawJobRecord) -> NormalisedJobRecord:
@@ -34,7 +59,14 @@ def normalise_job(raw: RawJobRecord) -> NormalisedJobRecord:
     )
     mobility = extract_mobility(raw.title, description, raw)
     company_norm = company_key(raw.company) or None
-    fp = fingerprint(raw.company, raw.title, geo.city, geo.country_code, work_mode.value)
+    fp = fingerprint(
+        raw.company,
+        raw.title,
+        geo.city,
+        geo.country_code,
+        work_mode.value,
+        requisition_for_fingerprint(raw),
+    )
     return NormalisedJobRecord(
         raw=raw,
         title=raw.title.strip(),

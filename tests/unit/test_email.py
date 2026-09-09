@@ -167,6 +167,7 @@ def test_send_resend_posts_to_api(monkeypatch):
             assert headers["Authorization"] == "Bearer re_key"
             assert json["to"] == ["you@example.com"]
             assert json["from"] == "Job Scout <onboarding@resend.dev>"
+            assert "cc" not in json
             return FakeResponse()
 
     monkeypatch.setattr("job_scout.services.email_digest.httpx.Client", FakeClient)
@@ -176,3 +177,37 @@ def test_send_resend_posts_to_api(monkeypatch):
         digest_to="you@example.com",
     )
     assert send_resend("Subject", "<p>Hi</p>", settings)["id"] == "re_test"
+
+
+def test_send_resend_includes_cc(monkeypatch):
+    from job_scout.config.settings import Settings
+
+    class FakeResponse:
+        status_code = 200
+
+        def json(self):
+            return {"id": "re_cc"}
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def post(self, url, headers=None, json=None):
+            assert json["to"] == ["nina@example.com"]
+            assert json["cc"] == ["tiaan@example.com"]
+            return FakeResponse()
+
+    monkeypatch.setattr("job_scout.services.email_digest.httpx.Client", FakeClient)
+    settings = Settings(
+        resend_api_key="re_key",
+        resend_from="Nina Scout <onboarding@resend.dev>",
+        digest_to="nina@example.com",
+        digest_cc="tiaan@example.com",
+    )
+    assert send_resend("Subject", "<p>Hi</p>", settings)["id"] == "re_cc"

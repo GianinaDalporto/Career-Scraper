@@ -209,6 +209,22 @@ Preference order used throughout: official public API → official RSS → publi
 - **Adapter:** `job_scout.adapters.ats.applitrack.AppliTrackAdapter`
 - **Enabled:** Yes — Fort Worth, Gwinnett (GA), Jefferson/Louisville (KY), Lewisville ISD (TX); skip empty tenants (e.g. OCPS)
 - **Reason:** Verified teacher-heavy feeds; skip empty scaffolds and Taleo/PowerSchool ATE boards without public JSON.
+- **Identity:** `AppliTrackJobId` is an identity-bearing query param preserved by `canonical_url()`; employer fingerprints include the requisition id so same-title posts do not merge.
+- **Geo:** Posted campus / “To Be Determined” stays on `location_text`; tenant `location_hint` fills city/region/country.
+- **Recovery for previously merged rows:** Do **not** auto-delete. Find fingerprints that own multiple AppliTrack source ids:
+
+```sql
+select j.canonical_fingerprint, j.title, j.company,
+       array_agg(distinct js.source_job_id) as job_ids,
+       count(distinct js.source_job_id) as n_ids
+from jobs j
+join job_sources js on js.job_id = j.id
+where js.source_name like 'applitrack:%'
+group by 1, 2, 3
+having count(distinct js.source_job_id) > 1;
+```
+
+Then re-run scrape after deploying this fix (new fingerprints per JobId). Manually set `active = false` on the old merged row once the split rows look correct. Keep `job_sources` history for audit.
 
 ### The Muse
 - **URL/domain:** `www.themuse.com/api/public/jobs`

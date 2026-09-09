@@ -58,13 +58,21 @@ def test_same_title_different_city_not_merged():
 
 
 def test_same_title_company_different_requisition_same_city_fingerprint():
+    """Employer ATS req IDs must stay separate even with identical title/city."""
+    from job_scout.services.normalisation import fingerprint
+
     idx = DuplicateIndex()
-    a = canonical_job()
-    b = canonical_job()
-    idx.add(a, _ref("https://ats.example/req-1", source="greenhouse", job_id="req-1", pref=SourcePreference.EMPLOYER_ATS))
-    idx.add(b, _ref("https://ats.example/req-2", source="greenhouse", job_id="req-2", pref=SourcePreference.EMPLOYER_ATS))
-    # Same fingerprint (company+title+city+country+mode) is treated as the same requisition/repost.
-    assert len(idx.jobs) == 1
+    a = canonical_job(
+        canonical_fingerprint=fingerprint("Jacobs", "Senior Mechanical Engineer", "Cape Town", "ZA", "onsite", "req-1"),
+        apply_url="https://ats.example/jobs?gh_jid=req-1",
+    )
+    b = canonical_job(
+        canonical_fingerprint=fingerprint("Jacobs", "Senior Mechanical Engineer", "Cape Town", "ZA", "onsite", "req-2"),
+        apply_url="https://ats.example/jobs?gh_jid=req-2",
+    )
+    idx.add(a, _ref("https://ats.example/jobs?gh_jid=req-1", source="greenhouse", job_id="req-1", pref=SourcePreference.EMPLOYER_ATS))
+    idx.add(b, _ref("https://ats.example/jobs?gh_jid=req-2", source="greenhouse", job_id="req-2", pref=SourcePreference.EMPLOYER_ATS))
+    assert len(idx.jobs) == 2
 
 
 def test_employer_preferred_over_aggregator():

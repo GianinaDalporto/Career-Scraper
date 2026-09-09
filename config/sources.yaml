@@ -224,6 +224,10 @@ sources:
     notes: >
       Frontline AppliTrack Output.asp HTML feed (document.write). Only curated
       tenants with non-empty JobID lists — OCPS and many other slugs return empty scaffolds.
+      Identity is AppliTrackJobId (preserved in canonical URLs). Optional bounded detail
+      fetches enrich descriptions; failures leave description unknown.
+    fetch_details: true
+    max_detail_fetches_per_tenant: 40
 
   lever:
     enabled: true

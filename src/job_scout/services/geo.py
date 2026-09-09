@@ -395,6 +395,77 @@ def _extract_country_restrictions(blob: str) -> list[str]:
     return found
 
 
+def in_target_onsite_countries(country_code: str | None, profile: dict[str, Any]) -> bool:
+    allowed = set((profile.get("geographic") or {}).get("onsite_hybrid_countries") or [])
+    if not country_code:
+        return False
+    return country_code.upper() in allowed
+
+
+AMBIGUOUS_LOCATION_PHRASES = frozenset(
+    {
+        "to be determined",
+        "tbd",
+        "tba",
+        "various",
+        "various locations",
+        "multiple locations",
+        "multiple sites",
+        "district wide",
+        "district-wide",
+        "see posting",
+        "not specified",
+        "unspecified",
+        "anywhere in district",
+        "location flexible",
+    }
+)
+
+
+def is_ambiguous_location(text: str | None) -> bool:
+    if text is None or not str(text).strip():
+        return True
+    key = normalise_key(text)
+    if key in AMBIGUOUS_LOCATION_PHRASES:
+        return True
+    if key.startswith("to be determined"):
+        return True
+    return False
+
+
+def _apply_location_hint(snapshot: GeoSnapshot, raw: RawJobRecord) -> GeoSnapshot:
+    """Fill city/region/country from a trusted tenant hint without erasing posted text."""
+    payload = raw.raw_payload if isinstance(raw.raw_payload, dict) else {}
+    hint = payload.get("location_hint") or payload.get("geo_hint")
+    if not hint:
+        return snapshot
+    hint_text = str(hint).strip()
+    if not hint_text:
+        return snapshot
+    hint_snap = classify_remote_scope(hint_text, None)
+    # Always keep the original posted location_text (campus name, TBD, etc.).
+    snapshot.location_text = raw.location_text
+    ambiguous = is_ambiguous_location(raw.location_text)
+    if ambiguous:
+        if hint_snap.city:
+            snapshot.city = hint_snap.city
+        if hint_snap.region:
+            snapshot.region = hint_snap.region
+        if hint_snap.country_code:
+            snapshot.country_code = hint_snap.country_code
+            snapshot.country_name = hint_snap.country_name
+        return snapshot
+    # Campus / school name: keep posted label as city when present; borrow region/country.
+    if not snapshot.country_code and hint_snap.country_code:
+        snapshot.country_code = hint_snap.country_code
+        snapshot.country_name = hint_snap.country_name
+    if not snapshot.region and hint_snap.region:
+        snapshot.region = hint_snap.region
+    if not snapshot.city and hint_snap.city:
+        snapshot.city = hint_snap.city
+    return snapshot
+
+
 def geo_from_raw(raw: RawJobRecord, description: str) -> GeoSnapshot:
     snapshot = classify_remote_scope(
         raw.location_text,
@@ -412,11 +483,5 @@ def geo_from_raw(raw: RawJobRecord, description: str) -> GeoSnapshot:
     ):
         snapshot.country_code = "ZA"
         snapshot.country_name = COUNTRY_NAMES.get("ZA")
+    snapshot = _apply_location_hint(snapshot, raw)
     return snapshot
-
-
-def in_target_onsite_countries(country_code: str | None, profile: dict[str, Any]) -> bool:
-    allowed = set((profile.get("geographic") or {}).get("onsite_hybrid_countries") or [])
-    if not country_code:
-        return False
-    return country_code.upper() in allowed

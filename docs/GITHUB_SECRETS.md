@@ -14,7 +14,8 @@ Use **Repository secrets** (not Environment secrets).
 - `RESEND_API_KEY` — from https://resend.com/api-keys
 - `RESEND_FROM` — verified sender, e.g. `Job Scout <jobs@yourdomain.com>`  
   For a quick test only: `Job Scout <onboarding@resend.dev>` (Resend only delivers that to your Resend account email)
-- `DIGEST_TO` — your inbox address
+- `DIGEST_TO` — Nina’s inbox address
+- `DIGEST_CC` — optional CC inbox (e.g. Tiaan); omit to send without CC
 
 SMTP / Gmail app passwords are **not** used anymore.
 

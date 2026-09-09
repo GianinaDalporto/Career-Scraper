@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     resend_from: str = ""
     digest_to: str = ""
+    digest_cc: str = ""
 
     usajobs_api_key: str = ""
     usajobs_user_agent: str = ""
